@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dad's Groceries Management System | POS & Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div id="app-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="brand-info">
+                <div class="brand-icon-box"><i class="fa-solid fa-store"></i></div>
+                <div>
+                    <h1 data-en="Dad's Groceries System" data-kn="ಡ್ಯಾಡ್ಸ್ ಕಿರಾಣಿ ಮ್ಯಾನೇಜ್‌ಮೆಂಟ್ ಸಿಸ್ಟಮ್">Dad's Groceries System</h1>
+                    <span class="subtitle" data-en="POS & ADMIN" data-kn="ಪೊಸ್ & ಇನ್ವೆಂಟರಿ ನಿರ್ವಹಣೆ">POS & ADMIN</span>
+                </div>
+            </div>
+
+            <div class="header-controls">
+                <div class="portal-switch">
+                    <button id="btn-pos-portal" class="nav-btn active" onclick="switchPortal('pos')">
+                        <i class="fa-solid fa-cash-register"></i> <span data-en="Counter POS" data-kn="ಕೌಂಟರ್ POS">Counter POS</span>
+                    </button>
+                    <button id="btn-admin-portal" class="nav-btn" onclick="switchPortal('admin')">
+                        <i class="fa-solid fa-chart-line"></i> <span data-en="Admin Portal" data-kn="ಅಡ್ಮಿನ್ ಪೋರ್ಟಲ್">Admin Portal</span>
+                    </button>
+                </div>
+
+                <div class="lang-selector">
+                    <button class="lang-btn active" id="lang-en" onclick="setLanguage('en')">EN</button>
+                    <button class="lang-btn" id="lang-kn" onclick="setLanguage('kn')">ಕನ್ನಡ</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- COUNTER POS PORTAL -->
+        <main id="portal-pos" class="portal-view active">
+            <div class="pos-layout">
+                
+                <!-- Catalog Section -->
+                <section class="pos-catalog-section">
+                    <div class="search-bar-row">
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="pos-search" placeholder="Search items by name or SKU..." data-en-placeholder="Search items by name or SKU..." data-kn-placeholder="ವಸ್ತುಗಳು ಅಥವಾ ಎಸ್‌ಕೆಯು ಹುಡುಕಿ..." oninput="filterPOSCatalog()">
+                        </div>
+                        <div class="sku-quick-pad-toggle" onclick="toggleQuickPad()">
+                            <i class="fa-solid fa-calculator"></i> <span data-en="SKU Pad" data-kn="ಎಸ್‌ಕೆಯು ಪ್ಯಾಡ್">SKU Pad</span>
+                        </div>
+                    </div>
+
+                    <!-- Category Tabs -->
+                    <div class="category-section-box">
+                        <span class="category-label"><i class="fa-solid fa-filter"></i> Categories:</span>
+                        <div class="category-tabs" id="pos-category-tabs">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- SKU Quick Pad Modal -->
+                    <div id="sku-quick-pad" class="sku-pad-container hidden">
+                        <div class="sku-pad-header">
+                            <span data-en="Quick SKU Lookup" data-kn="ತ್ವರಿತ ಎಸ್‌ಕೆಯು ಹುಡುಕಾಟ">Quick SKU Lookup</span>
+                            <i class="fa-solid fa-xmark" onclick="toggleQuickPad()"></i>
+                        </div>
+                        <div class="sku-pad-display" id="sku-display">0</div>
+                        <div class="sku-pad-grid">
+                            <button onclick="appendSku(1)">1</button>
+                            <button onclick="appendSku(2)">2</button>
+                            <button onclick="appendSku(3)">3</button>
+                            <button onclick="appendSku(4)">4</button>
+                            <button onclick="appendSku(5)">5</button>
+                            <button onclick="appendSku(6)">6</button>
+                            <button onclick="appendSku(7)">7</button>
+                            <button onclick="appendSku(8)">8</button>
+                            <button onclick="appendSku(9)">9</button>
+                            <button onclick="clearSku()" class="btn-warning">C</button>
+                            <button onclick="appendSku(0)">0</button>
+                            <button onclick="searchSku()" class="btn-success"><i class="fa-solid fa-check"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="catalog-header-bar">
+                        <h3 data-en="PRODUCT CATALOG" data-kn="ಉತ್ಪನ್ನ ಕ್ಯಾಟಲಾಗ್">PRODUCT CATALOG</h3>
+                        <span id="catalog-count-badge" class="catalog-count-badge">0 items</span>
+                    </div>
+
+                    <div class="pos-items-grid" id="pos-items-grid">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </section>
+
+                <!-- Cart Section -->
+                <section class="pos-cart-section">
+                    <div class="cart-header">
+                        <h2><i class="fa-solid fa-cart-shopping"></i> <span data-en="Current Bill" data-kn="ಪ್ರಸ್ತುತ ಬಿಲ್">Current Bill</span></h2>
+                        <button class="btn-clear-cart" onclick="clearCart()"><i class="fa-solid fa-trash-can"></i> <span data-en="Clear" data-kn="ತೆರವು">Clear</span></button>
+                    </div>
+
+                    <div class="cart-items-list" id="cart-items-list">
+                        <div class="empty-cart-msg" data-en="No items added yet. Click items from catalog." data-kn="ಯಾವುದೇ ವಸ್ತುಗಳನ್ನು ಸೇರಿಸಲಾಗಿಲ್ಲ.">No items added yet. Click items from catalog.</div>
+                    </div>
+
+                    <div class="cart-summary-box">
+                        <div class="summary-row">
+                            <span data-en="Subtotal:" data-kn="ಉಪಮೊತ್ತ:">Subtotal:</span>
+                            <span id="cart-subtotal">₹0.00</span>
+                        </div>
+                        <div class="summary-row discount-row">
+                            <span><span data-en="Discount" data-kn="ರಿಯಾಯಿತಿ">Discount</span> (%):</span>
+                            <input type="number" id="cart-discount-input" value="0" min="0" max="100" oninput="calculateCartTotals()">
+                        </div>
+                        <div class="summary-row total-row">
+                            <span data-en="Grand Total:" data-kn="ಒಟ್ಟು ಮೊತ್ತ:">Grand Total:</span>
+                            <span id="cart-grand-total">₹0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="payment-modes">
+                        <button class="pay-btn active" data-mode="Cash" onclick="setPaymentMode('Cash')">
+                            <i class="fa-solid fa-money-bill-wave"></i> <span data-en="Cash" data-kn="ನಗದು">Cash</span>
+                        </button>
+                        <button class="pay-btn" data-mode="UPI" onclick="setPaymentMode('UPI')">
+                            <i class="fa-solid fa-qrcode"></i> <span data-en="UPI / QR" data-kn="ಯುಪಿಐ / ಕ್ಯೂಆರ್">UPI / QR</span>
+                        </button>
+                        <button class="pay-btn" data-mode="Khata" onclick="setPaymentMode('Khata')">
+                            <i class="fa-solid fa-book-bookmark"></i> <span data-en="Khata" data-kn="ಖಾತಾ">Khata</span>
+                        </button>
+                    </div>
+
+                    <button class="btn-checkout" onclick="checkoutOrder()">
+                        <i class="fa-solid fa-print"></i> <span data-en="Complete & Print Receipt" data-kn="ಪೂರ್ಣಗೊಳಿಸಿ ಮತ್ತು ರಶೀದಿ ಮುದ್ರಿಸಿ">Complete & Print Receipt</span>
+                    </button>
+                </section>
+
+            </div>
+        </main>
+
+        <!-- ADMIN PORTAL -->
+        <main id="portal-admin" class="portal-view">
+            <div class="admin-layout">
+                <aside class="admin-sidebar">
+                    <button class="admin-tab-btn active" onclick="switchAdminTab('inventory')">
+                        <i class="fa-solid fa-boxes-stacked"></i> <span data-en="Inventory Control" data-kn="ಇನ್ವೆಂಟರಿ ನಿಯಂತ್ರಣ">Inventory Control</span>
+                    </button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('categories')">
+                        <i class="fa-solid fa-tags"></i> <span data-en="Manage Categories" data-kn="ವರ್ಗಗಳನ್ನು ನಿರ್ವಹಿಸಿ">Manage Categories</span>
+                    </button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('sold-out')">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <span data-en="Sold-Out & Low Stock" data-kn="ಖಾಲಿಯಾದ ಸ್ಟಾಕ್">Sold-Out List</span>
+                    </button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('expenses')">
+                        <i class="fa-solid fa-receipt"></i> <span data-en="Daily Expenses" data-kn="ದೈನಂದಿನ ಖರ್ಚುಗಳು">Daily Expenses</span>
+                    </button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('add-item')">
+                        <i class="fa-solid fa-circle-plus"></i> <span data-en="Add New Item" data-kn="ಹೊಸ ವಸ್ತು ಸೇರಿಸಿ">Add New Item</span>
+                    </button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('analytics')">
+                        <i class="fa-solid fa-chart-pie"></i> <span data-en="Sales Analytics" data-kn="ಮಾರಾಟ ವಿಶ್ಲೇಷಣೆ">Sales Analytics</span>
+                    </button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('transactions')">
+                        <i class="fa-solid fa-clock-rotate-left"></i> <span data-en="Transaction Logs" data-kn="ವಹಿವಾಟು ದಾಖಲೆಗಳು">Transaction Logs</span>
+                    </button>
+                </aside>
+
+                <div class="admin-content-area">
+                    <!-- TAB 1: INVENTORY -->
+                    <div id="admin-tab-inventory" class="admin-tab-content active">
+                        <div class="admin-panel-header">
+                            <h2><i class="fa-solid fa-boxes-stacked"></i> <span data-en="Inventory Stock Management & Editing" data-kn="ಇನ್ವೆಂಟರಿ ಸ್ಟಾಕ್ ಮತ್ತು ಬೆಲೆ ಎಡಿಟಿಂಗ್">Inventory & Price Editing</span></h2>
+                            <div class="inventory-actions-row">
+                                <input type="text" id="admin-search-input" placeholder="Search inventory..." oninput="renderAdminInventory()">
+                                <button class="btn-export" onclick="exportInventoryCSV()"><i class="fa-solid fa-download"></i> <span data-en="Export CSV" data-kn="ಸಿಎಸ್‌ವಿ ಡೌನ್‌ಲೋಡ್">Export CSV</span></button>
+                            </div>
+                        </div>
+                        <div class="alert-box-banner hidden" id="low-stock-banner">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span id="low-stock-text">Checking stock levels...</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>SKU</th>
+                                        <th data-en="Item Name" data-kn="ವಸ್ತುವಿನ ಹೆಸರು">Item Name</th>
+                                        <th data-en="Category" data-kn="ವರ್ಗ">Category</th>
+                                        <th data-en="Full Price (₹)" data-kn="ಪೂರ್ಣ ಬೆಲೆ (₹)">Full Price (₹)</th>
+                                        <th data-en="Half Price (₹)" data-kn="ಅರ್ಧ ಬೆಲೆ (₹)">Half Price (₹)</th>
+                                        <th data-en="Stock" data-kn="ಸ್ಟಾಕ್">Stock</th>
+                                        <th data-en="Actions" data-kn="ಕ್ರಿಯೆಗಳು">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-inventory-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 1.X: MANAGE CATEGORIES -->
+                    <div id="admin-tab-categories" class="admin-tab-content">
+                        <div class="admin-panel-header">
+                            <h2><i class="fa-solid fa-tags"></i> <span data-en="Category Management" data-kn="ವರ್ಗಗಳ ನಿರ್ವಹಣೆ">Category Management</span></h2>
+                        </div>
+                        <form id="category-form" onsubmit="handleAddCategory(event)" class="styled-form" style="margin-bottom: 24px;">
+                            <div class="form-grid" style="grid-template-columns: 1fr;">
+                                <div class="form-group">
+                                    <label data-en="New Category Name" data-kn="ಹೊಸ ವರ್ಗದ ಹೆಸರು">New Category Name</label>
+                                    <input type="text" id="new-category-name" required placeholder="e.g. Dairy & Milk">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-submit-item"><i class="fa-solid fa-plus"></i> <span data-en="Add Category" data-kn="ವರ್ಗ ಸೇರಿಸಿ">Add Category</span></button>
+                        </form>
+
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th data-en="Category Name" data-kn="ವರ್ಗದ ಹೆಸರು">Category Name</th>
+                                        <th data-en="Action" data-kn="ಕ್ರಿಯೆ">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-categories-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 1.1: SOLD-OUT / LOW STOCK LIST -->
+                    <div id="admin-tab-sold-out" class="admin-tab-content">
+                        <div class="admin-panel-header">
+                            <h2><i class="fa-solid fa-triangle-exclamation"></i> <span data-en="Sold-Out & Low Stock Items" data-kn="ಖಾಲಿಯಾದ ಮತ್ತು ಕಡಿಮೆ ಸ್ಟಾಕ್ ವಸ್ತುಗಳು">Sold-Out & Low Stock Items</span></h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>SKU</th>
+                                        <th data-en="Item Name" data-kn="ವಸ್ತುವಿನ ಹೆಸರು">Item Name</th>
+                                        <th data-en="Category" data-kn="ವರ್ಗ">Category</th>
+                                        <th data-en="Current Stock" data-kn="ಪ್ರಸ್ತುತ ಸ್ಟಾಕ್">Current Stock</th>
+                                        <th data-en="Status" data-kn="ಸ್ಥಿತಿ">Status</th>
+                                        <th data-en="Quick Restock (+10)" data-kn="ಸ್ಟಾಕ್ ಮರುಪೂರಣ">Quick Restock</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-sold-out-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 1.2: DAILY EXPENSES -->
+                    <div id="admin-tab-expenses" class="admin-tab-content">
+                        <div class="admin-panel-header">
+                            <h2><i class="fa-solid fa-receipt"></i> <span data-en="Daily Expenses Tracker" data-kn="ದೈನಂದಿನ ಖರ್ಚುಗಳ ಟ್ರ್ಯಾಕರ್">Daily Expenses Tracker</span></h2>
+                            <div class="kpi-card" style="padding: 8px 16px;">
+                                <span data-en="Total Expenses" data-kn="ಒಟ್ಟು ಖರ್ಚು">Total Expenses</span>
+                                <h3 id="kpi-total-expenses">₹0.00</h3>
+                            </div>
+                        </div>
+
+                        <form id="expense-form" onsubmit="handleAddExpense(event)" class="styled-form" style="margin-bottom: 24px;">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label data-en="Expense Title / Description" data-kn="ಖರ್ಚಿನ ವಿವರಣೆ">Expense Title / Description</label>
+                                    <input type="text" id="expense-title" required placeholder="e.g. Electricity Bill, Shop Rent, Tea">
+                                </div>
+                                <div class="form-group">
+                                    <label data-en="Amount (₹)" data-kn="ಮೊತ್ತ (₹)">Amount (₹)</label>
+                                    <input type="number" step="0.5" id="expense-amount" required placeholder="500">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-submit-item"><i class="fa-solid fa-plus"></i> <span data-en="Add Expense" data-kn="ಖರ್ಚು ಸೇರಿಸಿ">Add Expense</span></button>
+                        </form>
+
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th data-en="Date & Time" data-kn="ಸಮಯ">Date & Time</th>
+                                        <th data-en="Description" data-kn="ವಿವರಣೆ">Description</th>
+                                        <th data-en="Amount (₹)" data-kn="ಮೊತ್ತ (₹)">Amount (₹)</th>
+                                        <th data-en="Action" data-kn="ಕ್ರಿಯೆ">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-expenses-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: ADD NEW ITEM -->
+                    <div id="admin-tab-add-item" class="admin-tab-content">
+                        <div class="admin-panel-header">
+                            <h2><i class="fa-solid fa-circle-plus"></i> <span data-en="Add New Product to Catalog" data-kn="ಹೊಸ ಉತ್ಪನ್ನ ಸೇರಿಸಿ">Add New Product to Catalog</span></h2>
+                        </div>
+                        <form id="add-item-form" onsubmit="handleAddNewItem(event)" class="styled-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label data-en="Item Name" data-kn="ವಸ್ತುವಿನ ಹೆಸರು">Item Name</label>
+                                    <input type="text" id="new-item-name" required placeholder="e.g. Tata Salt 1kg">
+                                </div>
+                                <div class="form-group">
+                                    <label data-en="Category" data-kn="ವರ್ಗ">Category</label>
+                                    <select id="new-item-category">
+                                        <!-- Populated via JS -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label data-en="Full Pack Price (₹)" data-kn="ಪೂರ್ಣ ಬೆಲೆ (₹)">Full Pack Price (₹)</label>
+                                    <input type="number" step="0.5" id="new-item-price" required placeholder="480">
+                                </div>
+                                <div class="form-group">
+                                    <label data-en="Half Pack Price (₹) [Optional]" data-kn="ಅರ್ಧ ಬೆಲೆ (₹) [ಐಚ್ಛಿಕ]">Half Pack Price (₹) [Optional]</label>
+                                    <input type="number" step="0.5" id="new-item-half-price" placeholder="240">
+                                </div>
+                                <div class="form-group">
+                                    <label data-en="Initial Stock Qty" data-kn="ಆರಂಭಿಕ ಸ್ಟಾಕ್ ಪ್ರಮಾಣ">Initial Stock Qty</label>
+                                    <input type="number" id="new-item-stock" required value="50">
+                                </div>
+                                <div class="form-group">
+                                    <label data-en="SKU Code" data-kn="ಎಸ್‌ಕೆಯು ಕೋಡ್">SKU Code</label>
+                                    <input type="text" id="new-item-sku" placeholder="Auto or Custom SKU">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-submit-item"><i class="fa-solid fa-plus"></i> <span data-en="Save Item to Inventory" data-kn="ಉಳಿಸಿ">Save Item to Inventory</span></button>
+                        </form>
+                    </div>
+
+                    <!-- TAB 3: ANALYTICS (Daily & Monthly Revenue) -->
+                    <div id="admin-tab-analytics" class="admin-tab-content">
+                        <div class="admin-panel-header">
+                            <h2><i class="fa-solid fa-chart-pie"></i> <span data-en="Sales & Revenue Analytics" data-kn="ಮಾರಾಟ ಮತ್ತು ಆದಾಯ ವಿಶ್ಲೇಷಣೆ">Sales & Revenue Analytics</span></h2>
+                        </div>
+                        <div class="analytics-kpi-grid">
+                            <div class="kpi-card large">
+                                <span data-en="Daily Revenue (Today)" data-kn="ದೈನಂದಿನ ಆದಾಯ">Daily Revenue (Today)</span>
+                                <h3 id="kpi-daily-revenue">₹0.00</h3>
+                                <p><small data-en="Total sales collected today" data-kn="ಇಂದಿನ ಒಟ್ಟು ಮಾರಾಟ">Total sales collected today</small></p>
+                            </div>
+                            <div class="kpi-card large">
+                                <span data-en="Monthly Revenue (This Month)" data-kn="ಮಾಸಿಕ ಆದಾಯ">Monthly Revenue (This Month)</span>
+                                <h3 id="kpi-monthly-revenue">₹0.00</h3>
+                                <p><small data-en="Total sales collected this month" data-kn="ಈ ತಿಂಗಳ ಒಟ್ಟು ಮಾರಾಟ">Total sales collected this month</small></p>
+                            </div>
+                            <div class="kpi-card large">
+                                <span data-en="Total Lifetime Revenue" data-kn="ಒಟ್ಟು ಆದಾಯ">Total Lifetime Revenue</span>
+                                <h3 id="kpi-revenue">₹0.00</h3>
+                                <p><small data-en="Overall store revenue" data-kn="ಒಟ್ಟು ಅಂಗಡಿ ಆದಾಯ">Overall store revenue</small></p>
+                            </div>
+                            <div class="kpi-card large">
+                                <span data-en="Total Orders Completed" data-kn="ಒಟ್ಟು ಆದೇಶಗಳು">Total Orders Completed</span>
+                                <h3 id="kpi-orders">0</h3>
+                                <p><small data-en="Total customer transactions" data-kn="ಒಟ್ಟು ಗ್ರಾಹಕ ವಹಿವಾಟುಗಳು">Total customer transactions</small></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: TRANSACTIONS -->
+                    <div id="admin-tab-transactions" class="admin-tab-content">
+                        <div class="admin-panel-header">
+                            <h2><i class="fa-solid fa-clock-rotate-left"></i> <span data-en="Transaction History" data-kn="ವಹಿವಾಟು ಇತಿಹಾಸ">Transaction History</span></h2>
+                            <button class="btn-clear-cart" onclick="clearTransactions()"><i class="fa-solid fa-trash"></i> <span data-en="Clear Logs" data-kn="ತೆರವುಗೊಳಿಸಿ">Clear Logs</span></button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Time</th>
+                                        <th>Items Summary</th>
+                                        <th>Mode</th>
+                                        <th>Total (₹)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-transactions-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- PhonePe UPI QR Code Modal -->
+    <div id="upi-qr-modal" class="receipt-modal-overlay hidden">
+        <div class="receipt-card" style="width: 320px; text-align: center; font-family: var(--font-stack);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="font-size: 16px; color: #b45309;"><i class="fa-solid fa-qrcode"></i> Scan PhonePe QR</h3>
+                <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 18px;" onclick="closeUpiModal()"></i>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Scan to pay via PhonePe / UPI</p>
+            <div style="font-size: 24px; font-weight: 700; color: var(--text-dark); margin-bottom: 16px;" id="upi-qr-amount">₹0.00</div>
+            
+            <!-- PhonePe QR Code Container matching reference -->
+            <div class="qr-code-box">
+                <div class="qr-code-inner">
+                    <!-- Pure CSS/SVG generated PhonePe branded QR placeholder graphic -->
+                    <div class="phonepe-qr-graphic">
+                        <div class="phonepe-center-badge">पे</div>
+                    </div>
+                </div>
+            </div>
+
+            <p style="font-size: 11px; color: var(--text-muted); margin: 16px 0;">UPI ID: 98800xxxxx@ybl</p>
+            <button onclick="confirmUpiPayment()" class="btn-submit-item" style="width: 100%; justify-content: center;">Payment Received & Print Receipt</button>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div id="edit-item-modal" class="receipt-modal-overlay hidden" style="font-family: var(--font-stack);">
+        <div class="receipt-card" style="width: 440px; font-family: var(--font-stack);">
+            <div class="admin-panel-header" style="margin-bottom: 14px;">
+                <h2><i class="fa-solid fa-pen-to-square"></i> Edit Product</h2>
+                <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 18px;" onclick="closeEditModal()"></i>
+            </div>
+            <form id="edit-item-form" onsubmit="saveEditedItem(event)">
+                <input type="hidden" id="edit-sku">
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label>Item Name (English)</label>
+                    <input type="text" id="edit-name-en" required style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label>Item Name (Kannada)</label>
+                    <input type="text" id="edit-name-kn" required style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label>Category</label>
+                    <select id="edit-category" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px;">
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label>Full Price (₹)</label>
+                        <input type="number" step="0.5" id="edit-price" required style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Half Price (₹)</label>
+                        <input type="number" step="0.5" id="edit-half-price" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px;">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Stock Qty</label>
+                    <input type="number" id="edit-stock" required style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn-submit-item" style="flex: 1; justify-content: center;">Save Changes</button>
+                    <button type="button" onclick="closeEditModal()" class="btn-close-modal" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Receipt Modal -->
+    <div id="receipt-modal" class="receipt-modal-overlay hidden">
+        <div class="receipt-card">
+            <div class="receipt-store-header">
+                <h2>DAD'S GROCERIES</h2>
+                <p>Local Retail & Provision Store</p>
+                <hr>
+            </div>
+            <div id="receipt-meta-info" class="receipt-meta"></div>
+            <table class="receipt-items-table">
+                <thead>
+                    <tr><th>Item</th><th>Qty</th><th>Price</th><th>Amt</th></tr>
+                </thead>
+                <tbody id="receipt-items-tbody"></tbody>
+            </table>
+            <hr>
+            <div id="receipt-totals-section" class="receipt-totals"></div>
+            <div class="receipt-footer">
+                <p>Thank You! Visit Again.</p>
+            </div>
+            <div class="receipt-actions">
+                <button onclick="window.print()" class="btn-print"><i class="fa-solid fa-print"></i> Print</button>
+                <button onclick="closeReceiptModal()" class="btn-close-modal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
